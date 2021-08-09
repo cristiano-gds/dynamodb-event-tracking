@@ -1,19 +1,13 @@
 {
     "TableName" : "EventTracking",
     "AttributeDefinitions": [
-        {   "AttributeName": "uid",
-            "AttributeType": "S"
-        },
-        {   "AttributeName": "status",
+        {   "AttributeName": "Id",
             "AttributeType": "S"
         }
     ],
    "KeySchema": [
-        {   "AttributeName": "uid", 
+        {   "AttributeName": "Id", 
             "KeyType": "HASH"
-        },
-        {   "AttributeName": "status", 
-            "KeyType": "RANGE"
         }
     ],
     "ProvisionedThroughput": {

@@ -1,7 +1,14 @@
 # dynamodb-event-tracking
 
-### execute all docker compose
-- run docker-compose -f docker-compose-localstack.yml up -d
+## Localstack 
 
-### check if dynamodb table was created
+https://hub.docker.com/r/localstack/localstack
+
+### Steps
+
+##### execute all docker compose
+- run docker-compose -f docker-compose.yml up -d --build
+
+##### check if dynamodb table was created
 - run aws dynamodb list-tables --endpoint-url http://localhost:4566
+
