@@ -1,8 +1,8 @@
 using System;
 
-namespace webapi.Models
+namespace webapi.Model
 {
-    public class EventRequest
+    public class EventInput
     {
         public string ExternalCode { get; set; }
 

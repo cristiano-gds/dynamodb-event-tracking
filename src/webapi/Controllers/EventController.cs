@@ -5,13 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using webapi.Models;
+using webapi.Model;
+using webapi.Domain;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using System.Runtime.CompilerServices;
 using Amazon.Runtime;
 using Newtonsoft.Json;
 using Amazon.DynamoDBv2.Model;
+using webapi.Contracts;
 
 namespace webapi.Controllers
 {
@@ -21,98 +23,53 @@ namespace webapi.Controllers
     {
         private readonly ILogger<EventController> _logger;
         private readonly AmazonDynamoDBClient _client;
+        private readonly IEventRepository _repository;
 
-        public EventController(ILogger<EventController> logger)
+        public EventController(ILogger<EventController> logger, IEventRepository repository)
         {
             _logger = logger;
-            AmazonDynamoDBConfig dbConfig = new AmazonDynamoDBConfig();
-            dbConfig.ServiceURL = "http://localstack:4566";
-            _client = new AmazonDynamoDBClient(dbConfig);
+            _repository = repository;
         }
 
         [HttpPost]
         [Route("Create")]
-        public async Task<string> CreateAsync([FromBody]EventRequest eventRequest)
+        public async Task<string> CreateAsync([FromBody]EventInput model)
         {
             //Save event in DynamoDB
-            
-            Table table = Table.LoadTable(_client, "EventTracking");
+            return await _repository.Add(model);
 
-            var id = Guid.NewGuid().ToString();
-            Document document = new Document();
-            document["Id"] = id;
-            document["Externalcode"] = eventRequest.ExternalCode;
-            document["Message"] = eventRequest.Message;
-            document["Date"] = DateTime.Now.ToString("yyyy-MM-dd");
-            
-            var tracking = new DynamoDBList();
-        
-            Document track = new Document();
-            track["Status"] = "EVENT_CREATED";
-            track["EventDate"] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-            tracking.Add(track);
+            //publish message in SNS
 
-            document.Add("Tracking", tracking);
 
-            await table.PutItemAsync(document);
-
-            return id;
         }
 
         [HttpPut]
         [Route("ChangeTracking/{id}")]
         public async void ChangeTrackingAsync(string id, [FromBody]string status)
         {
-            Table table = Table.LoadTable(_client, "EventTracking");
-            Primitive hash = new Primitive(id);
-            Document document = await table.GetItemAsync(hash);
-            
-            Document updateTrack = new Document();
-            updateTrack["Status"] = status;
-            updateTrack["EventDate"] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-            
-            ((DynamoDBList)document["Tracking"]).Add(updateTrack);
+            Event entity = await _repository.Single(id);
 
-            await table.UpdateItemAsync(document);
+            entity.Tracking.Add(new EventTrack()
+            {
+                Status = status,
+                EventDate = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss")
+            });
+
+            await _repository.Update(entity);
         }
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<EventResponse> GetAsync(string id)
+        public async Task<Event> GetAsync(string id)
         {
-            Table table = Table.LoadTable(_client, "EventTracking");
-            Document document = await table.GetItemAsync(id);
-            
-            return JsonConvert.DeserializeObject<EventResponse>(document.ToJson());
+            return await _repository.Single(id);
         }
 
         [HttpGet]
         [Route("GetByExternalCode/{code}")]
-        public async Task<List<EventResponse>> GetByExternalCodeAsync(string code)
+        public async Task<List<Event>> GetByExternalCodeAsync(string code)
         {
-            List<Document> documents = new List<Document>();
-
-            QueryRequest query = new QueryRequest()
-            {
-                TableName = "EventTracking",
-                IndexName = "ExternalCodeIndex",
-                KeyConditionExpression = "ExternalCode = :v_code",
-                ExpressionAttributeValues = new Dictionary<string, AttributeValue> {
-                    { ":v_code", new AttributeValue { S = code }}
-                },
-                ScanIndexForward = true,
-                ProjectionExpression = "Id"
-            };
-
-            var result = await _client.QueryAsync(query);
-
-            Table table = Table.LoadTable(_client, "EventTracking");
-            foreach(var item in result.Items)
-            {
-                documents.Add(await table.GetItemAsync(item["Id"].S));
-            }
-            
-            return JsonConvert.DeserializeObject<List<EventResponse>>(documents.ToJson());
+            return await _repository.FindByExternalCode(code);
         }
     }
 }

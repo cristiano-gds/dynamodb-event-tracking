@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using webapi.Contracts;
+using webapi.Infrastructure;
 
 namespace webapi
 {
@@ -29,6 +33,15 @@ namespace webapi
         {
             services.AddControllers();
             services.AddHealthChecks();
+
+            services.AddScoped<IEventRepository, EventRepository>();
+            var config = new AmazonDynamoDBConfig()
+            {
+                ServiceURL = "http://localstack:4566"
+            };
+            var client = new AmazonDynamoDBClient(config);
+            services.AddSingleton<IAmazonDynamoDB>(client);
+            services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
