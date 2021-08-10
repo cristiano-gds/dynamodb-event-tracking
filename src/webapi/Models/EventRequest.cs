@@ -4,7 +4,7 @@ namespace webapi.Models
 {
     public class EventRequest
     {
-        public int ExternalCode { get; set; }
+        public string ExternalCode { get; set; }
 
         public string Message { get; set; }
     }

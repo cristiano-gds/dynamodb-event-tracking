@@ -3,6 +3,28 @@
     "AttributeDefinitions": [
         {   "AttributeName": "Id",
             "AttributeType": "S"
+        },
+        {
+            "AttributeName": "ExternalCode",
+            "AttributeType": "S"
+        }
+    ],
+    "GlobalSecondaryIndexes": [ 
+        { 
+           "IndexName": "ExternalCodeIndex",
+           "KeySchema": [ 
+              { 
+                 "AttributeName": "ExternalCode",
+                 "KeyType": "HASH"
+              }
+           ],
+           "Projection": { 
+              "ProjectionType": "KEYS_ONLY"
+           },
+           "ProvisionedThroughput": { 
+              "ReadCapacityUnits": 10,
+              "WriteCapacityUnits": 10
+           }
         }
     ],
    "KeySchema": [

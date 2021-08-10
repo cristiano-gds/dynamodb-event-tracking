@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using webapi.Models;
 using Amazon.DynamoDBv2;
-
 using Amazon.DynamoDBv2.DocumentModel;
 using System.Runtime.CompilerServices;
 using Amazon.Runtime;
 using Newtonsoft.Json;
+using Amazon.DynamoDBv2.Model;
 
 namespace webapi.Controllers
 {
@@ -34,6 +34,8 @@ namespace webapi.Controllers
         [Route("Create")]
         public async Task<string> CreateAsync([FromBody]EventRequest eventRequest)
         {
+            //Save event in DynamoDB
+            
             Table table = Table.LoadTable(_client, "EventTracking");
 
             var id = Guid.NewGuid().ToString();
@@ -82,6 +84,35 @@ namespace webapi.Controllers
             Document document = await table.GetItemAsync(id);
             
             return JsonConvert.DeserializeObject<EventResponse>(document.ToJson());
+        }
+
+        [HttpGet]
+        [Route("GetByExternalCode/{code}")]
+        public async Task<List<EventResponse>> GetByExternalCodeAsync(string code)
+        {
+            List<Document> documents = new List<Document>();
+
+            QueryRequest query = new QueryRequest()
+            {
+                TableName = "EventTracking",
+                IndexName = "ExternalCodeIndex",
+                KeyConditionExpression = "ExternalCode = :v_code",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue> {
+                    { ":v_code", new AttributeValue { S = code }}
+                },
+                ScanIndexForward = true,
+                ProjectionExpression = "Id"
+            };
+
+            var result = await _client.QueryAsync(query);
+
+            Table table = Table.LoadTable(_client, "EventTracking");
+            foreach(var item in result.Items)
+            {
+                documents.Add(await table.GetItemAsync(item["Id"].S));
+            }
+            
+            return JsonConvert.DeserializeObject<List<EventResponse>>(documents.ToJson());
         }
     }
 }

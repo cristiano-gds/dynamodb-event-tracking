@@ -8,7 +8,7 @@ namespace webapi.Models
 
         public string Date { get; set; }
 
-        public int ExternalCode { get; set; }
+        public string ExternalCode { get; set; }
 
         public string Message { get; set; }
 
