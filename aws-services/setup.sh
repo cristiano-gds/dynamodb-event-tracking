@@ -2,7 +2,7 @@
 cd /aws-services
 
 # Wait just in case localstack delays the start
-sleep 7s
+sleep 15s
 
 echo "Creating dynamoDB table..."
 # Create table in dynamoDB using json(reference https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_CreateTable.html)

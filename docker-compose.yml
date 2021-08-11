@@ -40,6 +40,7 @@ services:
     ports: 
       - "5000:80"
     depends_on: 
+      - setup
       - localstack
   worker_a:
     container_name: worker_a
@@ -53,4 +54,15 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     depends_on: 
       - webapi
-      - localstack
+  worker_b:
+    container_name: worker_b
+    image: ${DOCKER_REGISTRY}worker_b
+    build:
+      context: ./src/workerB
+      dockerfile: Dockerfile
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on: 
+      - webapi

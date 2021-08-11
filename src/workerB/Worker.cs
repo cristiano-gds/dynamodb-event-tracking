@@ -12,13 +12,13 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace workerA
+namespace workerB
 {
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
         private readonly AmazonSQSClient _sqsClient;
-        private const string QUEUE_URL = "http://localhost:4566/000000000000/eventqueueA";
+        private const string QUEUE_URL = "http://localhost:4566/000000000000/eventqueueB";
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
@@ -33,7 +33,7 @@ namespace workerA
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                Console.WriteLine("Run workerA...");
+                Console.WriteLine("Run workerB...");
                 ProcessMessage();
 
                 await Task.Delay(RandomNumber(), stoppingToken);
@@ -55,7 +55,7 @@ namespace workerA
             var body = JToken.Parse(message.Body);
             MessageModel messageModel = JsonConvert.DeserializeObject<MessageModel>(body["Message"].ToString());
 
-            Console.WriteLine($"Message received in workerA. ExternalCode: {messageModel.ExternalCode}");
+            Console.WriteLine($"Message received in workerB. ExternalCode: {messageModel.ExternalCode}");
 
             UpdateInDynamoDB(messageModel);
         }
@@ -71,7 +71,7 @@ namespace workerA
             Document document = await table.GetItemAsync(hash);
 
             Document updateTrack = new Document();
-            updateTrack["Status"] = "EVENT_UPDATED_A";
+            updateTrack["Status"] = "EVENT_UPDATED_B";
             updateTrack["EventDate"] = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
             ((DynamoDBList)document["Tracking"]).Add(updateTrack);
