@@ -41,3 +41,16 @@ services:
       - "5000:80"
     depends_on: 
       - localstack
+  worker_a:
+    container_name: worker_a
+    image: ${DOCKER_REGISTRY}worker_a
+    build:
+      context: ./src/workerA
+      dockerfile: Dockerfile
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on: 
+      - webapi
+      - localstack
