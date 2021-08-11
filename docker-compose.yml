@@ -14,7 +14,7 @@ services:
       - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
   setup:
-    image: mesosphere/aws-cli
+    image: amazon/aws-cli
     container_name: setup_aws_services
     volumes:
       - ./aws-services:/aws-services
