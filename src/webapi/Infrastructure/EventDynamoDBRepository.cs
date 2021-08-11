@@ -11,18 +11,16 @@ using webapi.Domain;
 
 namespace webapi.Infrastructure
 {
-    public class EventRepository : IEventRepository
+    public class EventDynamoDBRepository : IEventRepository
     {
         private readonly IDynamoDBContext _context;
-        private readonly Table _eventTable;
-        private const string TABLE_NAME = "EventTracking";
 
-        public EventRepository(IDynamoDBContext context)
+        public EventDynamoDBRepository(IDynamoDBContext context)
         {
             _context = context;
         }
         
-        public async Task<string> Add(EventInput entity)
+        public async Task<string> Add(EventModel entity)
         {
             var id = Guid.NewGuid().ToString();
             Event model = new Event()

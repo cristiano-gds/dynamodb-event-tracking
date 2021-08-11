@@ -8,7 +8,7 @@ namespace webapi.Contracts
 {
     public interface IEventRepository
     {
-         Task<string> Add(EventInput entity);
+         Task<string> Add(EventModel entity);
 
          Task Update(Event entity);
 

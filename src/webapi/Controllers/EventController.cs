@@ -24,23 +24,27 @@ namespace webapi.Controllers
         private readonly ILogger<EventController> _logger;
         private readonly AmazonDynamoDBClient _client;
         private readonly IEventRepository _repository;
+        private readonly IPubSubService _pubsubService;
 
-        public EventController(ILogger<EventController> logger, IEventRepository repository)
+        public EventController(ILogger<EventController> logger, IEventRepository repository, IPubSubService pubsubService)
         {
             _logger = logger;
             _repository = repository;
+            _pubsubService = pubsubService;
         }
 
         [HttpPost]
         [Route("Create")]
-        public async Task<string> CreateAsync([FromBody]EventInput model)
+        public async Task<string> CreateAsync([FromBody]EventModel model)
         {
             //Save event in DynamoDB
-            return await _repository.Add(model);
-
+            string id = await _repository.Add(model);
+            MessageEventModel message = new MessageEventModel(id, model);
+            
             //publish message in SNS
+            await _pubsubService.Publish(message);
 
-
+            return id;
         }
 
         [HttpPut]

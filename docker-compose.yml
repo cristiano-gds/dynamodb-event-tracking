@@ -8,13 +8,13 @@ services:
       - '4566-4597:4566-4597'
       - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
     environment:
-      - SERVICES=dynamodb,sqs, sns
+      - SERVICES=dynamodb,sqs,sns
       - EDGE_PORT=4566
     volumes:
       - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
   setup:
-    image: amazon/aws-cli
+    image: mesosphere/aws-cli
     container_name: setup_aws_services
     volumes:
       - ./aws-services:/aws-services
@@ -36,6 +36,7 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: us-east-1
+      AWS_DEFAULT_URL: http://localhost:4566
     ports: 
       - "5000:80"
     depends_on: 

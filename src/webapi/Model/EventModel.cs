@@ -2,7 +2,7 @@ using System;
 
 namespace webapi.Model
 {
-    public class EventInput
+    public class EventModel
     {
         public string ExternalCode { get; set; }
 

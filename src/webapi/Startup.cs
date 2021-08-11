@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.SimpleNotificationService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -34,14 +35,21 @@ namespace webapi
             services.AddControllers();
             services.AddHealthChecks();
 
-            services.AddScoped<IEventRepository, EventRepository>();
-            var config = new AmazonDynamoDBConfig()
+            services.AddScoped<IEventRepository, EventDynamoDBRepository>();
+            services.AddScoped<IPubSubService, PubSubSNSService>();
+            string serviceURLAWS = "http://localstack:4566";
+            var configDB = new AmazonDynamoDBConfig
             {
-                ServiceURL = "http://localstack:4566"
+                ServiceURL = serviceURLAWS
             };
-            var client = new AmazonDynamoDBClient(config);
+            var client = new AmazonDynamoDBClient(configDB);
             services.AddSingleton<IAmazonDynamoDB>(client);
             services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
+            var configSNS = new AmazonSimpleNotificationServiceConfig
+            {
+                ServiceURL = serviceURLAWS
+            };
+            services.AddSingleton<AmazonSimpleNotificationServiceClient>(c => new AmazonSimpleNotificationServiceClient(configSNS));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

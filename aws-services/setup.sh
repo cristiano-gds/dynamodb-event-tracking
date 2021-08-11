@@ -19,7 +19,7 @@ aws sns create-topic --name eventtopic --endpoint-url http://localstack:4566
 
 echo "Subscribe queues to SNS Topic..."
 # Subscribe queues to SNS Topic
-aws sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:eventtopic --protocol sqs --notification-endpoint http://localstack:4566/000000000000/eventqueueA --endpoint-url http://localstack:4566
-aws sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:eventtopic --protocol sqs --notification-endpoint http://localstack:4566/000000000000/eventqueueB --endpoint-url http://localstack:4566
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:eventtopic --protocol sqs --notification-endpoint http://localhost:4566/000000000000/eventqueueA --endpoint-url http://localstack:4566
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:eventtopic --protocol sqs --notification-endpoint http://localhost:4566/000000000000/eventqueueB --endpoint-url http://localstack:4566
 
 echo "Finish localstack setup"
